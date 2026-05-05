@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FALCON AEROTECH • HANGAR</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --cyan: #00f5ff;
+            --silver: #c0c0c0;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #050507;
+            color: #e0e0e0;
+            font-family: 'Inter', system-ui, sans-serif;
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+        
+        canvas {
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 1;
+        }
+        
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+        
+        header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            padding: 30px 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 200;
+            mix-blend-mode: difference;
+        }
+        
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: 6px;
+            color: white;
+        }
+        
+        .nav a {
+            color: #aaa;
+            text-decoration: none;
+            margin-left: 48px;
+            font-size: 13px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: color 0.3s;
+        }
+        
+        .nav a:hover { color: var(--cyan); }
+        
+        #hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 50;
+        }
+        
+        .hero-content {
+            text-align: center;
+            pointer-events: auto;
+        }
+        
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 88px;
+            font-weight: 600;
+            letter-spacing: -2px;
+            line-height: 1;
+            background: linear-gradient(90deg, #ffffff, var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero-subtitle {
+            font-size: 21px;
+            margin-top: 16px;
+            color: #888;
+            letter-spacing: 6px;
+            font-weight: 400;
+        }
+        
+        .status-bar {
+            margin-top: 60px;
+            font-family: monospace;
+            font-size: 15px;
+            color: var(--cyan);
+            letter-spacing: 4px;
+        }
+        
+        .btn-primary {
+            margin-top: 50px;
+            padding: 18px 56px;
+            background: transparent;
+            border: 2px solid var(--cyan);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        
+        .btn-primary:hover {
+            background: var(--cyan);
+            color: #000;
+            box-shadow: 0 0 40px var(--cyan);
+        }
+        
+        .section {
+            position: relative;
+            z-index: 100;
+            padding: 160px 80px 120px;
+            background: rgba(5, 5, 7, 0.96);
+        }
+        
+        .section-header {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 80px;
+            color: white;
+        }
+        
+        .services {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 24px;
+        }
+        
+        .service-panel {
+            background: rgba(20, 22, 28, 0.7);
+            border: 1px solid #333;
+            padding: 38px 28px;
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+        }
+        
+        .service-panel:hover {
+            border-color: var(--cyan);
+            transform: translateY(-20px);
+            box-shadow: 0 30px 60px rgba(0, 245, 255, 0.15);
+        }
+        
+        .service-panel h3 {
+            margin: 20px 0 12px;
+            font-size: 19px;
+        }
+        
+        .dashboard {
+            background: #0a0a0c;
+            border: 1px solid #444;
+            padding: 50px;
+            display: grid;
+            grid-template-columns: 2fr 3fr;
+            gap: 60px;
+        }
+        
+        .gauges {
+            display: flex;
+            gap: 50px;
+            justify-content: center;
+        }
+        
+        .gauge-container {
+            text-align: center;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+        }
+        
+        .crew {
+            text-align: center;
+        }
+        
+        .crew img {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            filter: contrast(1.1) brightness(0.95);
+        }
+        
+        .terminal {
+            max-width: 760px;
+            margin: 0 auto;
+            background: #111114;
+            border: 2px solid var(--cyan);
+            padding: 60px 50px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            background: #1a1a1f;
+            border: 1px solid #555;
+            padding: 16px 20px;
+            color: white;
+            margin-bottom: 28px;
+            font-family: monospace;
+        }
+        
+        .init-btn {
+            width: 100%;
+            padding: 22px;
+            background: var(--cyan);
+            color: #000;
+            border: none;
+            font-size: 17px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            cursor: pointer;
+        }
+        
+        .scanline {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(transparent 50%, rgba(0, 245, 255, 0.04) 50%);
+            background-size: 100% 6px;
+            pointer-events: none;
+            animation: scan 12s linear infinite;
+            z-index: 5;
+            opacity: 0.12;
+        }
+        
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(300%); }
+        }
+        
+        .loading {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--cyan);
+            font-family: monospace;
+            transition: opacity 1.5s ease;
+        }
+        
+        .load-bar {
+            width: 420px;
+            height: 3px;
+            background: #222;
+            margin-top: 50px;
+            position: relative;
+        }
+        
+        .load-progress {
+            position: absolute;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #00f5ff, #ffffff);
+            box-shadow: 0 0 20px var(--cyan);
+        }
+    </style>
+</head>
+<body>
+    <!-- LOADING -->
+    <div id="loader" class="loading">
+        <div style="font-size: 15px; letter-spacing: 8px; margin-bottom: 20px;">FALCON AEROTECH</div>
+        <div id="boot-text" style="font-size: 18px; margin: 30px 0 60px; min-height: 26px;">AIRCRAFT SYSTEM INITIALIZING...</div>
+        <div class="load-bar">
+            <div id="progress" class="load-progress"></div>
+        </div>
+    </div>
+
+    <canvas id="bg"></canvas>
+
+    <div class="overlay">
+        <header>
+            <div class="logo">FALCON AEROTECH</div>
+            <div class="nav">
+                <a href="#services">SERVICES</a>
+                <a href="#dashboard">TELEMETRY</a>
+                <a href="#team">ENGINEERS</a>
+                <a href="#terminal">COMMAND</a>
+            </div>
+            <div style="color: var(--cyan); font-size: 14px;">HANGAR 07 • ACTIVE</div>
+        </header>
+
+        <!-- HERO -->
+        <section id="hero">
+            <div class="hero-content">
+                <div style="color: #666; font-size: 17px; letter-spacing: 5px; margin-bottom: 12px;">MERCEDES-AMG INSPIRED MAINTENANCE</div>
+                <h1 class="hero-title">HANGAR CONTROL</h1>
+                <p class="hero-subtitle">PRECISION ENGINEERING • RAPID DEPLOYMENT</p>
+                <button onclick="startPitSequence()" class="btn-primary">INITIATE HANGAR ACCESS</button>
+                <div class="status-bar" id="status">SYSTEMS NOMINAL • AWAITING AIRCRAFT</div>
+            </div>
+        </section>
+    </div>
+
+    <!-- SERVICES -->
+    <section id="services" class="section">
+        <h2 class="section-header">MAINTENANCE MODULES</h2>
+        <div class="services">
+            <div class="service-panel">
+                <span style="font-size: 42px; display: block; margin-bottom: 20px;">🔧</span>
+                <h3>ENGINE DIAGNOSTICS</h3>
+                <p style="color: #777; font-size: 14px;">Full turbofan analysis with real-time vibration mapping</p>
+            </div>
+            <div class="service-panel">
+                <span style="font-size: 42px; display: block; margin-bottom: 20px;">📐</span>
+                <h3>STRUCTURAL INSPECTION</h3>
+                <p style="color: #777; font-size: 14px;">Carbon composite integrity scanning and stress testing</p>
+            </div>
+            <div class="service-panel">
+                <span style="font-size: 42px; display: block; margin-bottom: 20px;">📡</span>
+                <h3>AVIONICS CALIBRATION</h3>
+                <p style="color: #777; font-size: 14px;">Fly-by-wire and radar system synchronization</p>
+            </div>
+            <div class="service-panel">
+                <span style="font-size: 42px; display: block; margin-bottom: 20px;">⛽</span>
+                <h3>FUEL &amp; HYDRAULICS</h3>
+                <p style="color: #777; font-size: 14px;">Pressure testing and fluid system optimization</p>
+            </div>
+            <div class="service-panel">
+                <span style="font-size: 42px; display: block; margin-bottom: 20px;">✅</span>
+                <h3>FLIGHT READINESS</h3>
+                <p style="color: #777; font-size: 14px;">Final certification and pre-flight validation</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="section" style="background: #08080b;">
+        <h2 class="section-header">LIVE TELEMETRY</h2>
+        <div class="dashboard">
+            <div class="gauges">
+                <div class="gauge-container">
+                    <svg width="180" height="180" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="82" fill="none" stroke="#222" stroke-width="22"/>
+                        <circle id="egt-circle" cx="100" cy="100" r="82" fill="none" stroke="#00f5ff" stroke-width="22" 
+                                stroke-dasharray="515" stroke-dashoffset="120" transform="rotate(-210 100 100)"/>
+                    </svg>
+                    <div style="margin-top: -125px; font-size: 38px; font-family: monospace;" id="egt-val">620</div>
+                    <div style="color: #888; font-size: 13px;">EGT °C</div>
+                </div>
+                
+                <div class="gauge-container">
+                    <svg width="180" height="180" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="82" fill="none" stroke="#222" stroke-width="22"/>
+                        <circle id="fuel-circle" cx="100" cy="100" r="82" fill="none" stroke="#ffffff" stroke-width="22" 
+                                stroke-dasharray="515" stroke-dashoffset="80" transform="rotate(-210 100 100)"/>
+                    </svg>
+                    <div style="margin-top: -125px; font-size: 38px; font-family: monospace;" id="fuel-val">94</div>
+                    <div style="color: #888; font-size: 13px;">FUEL %</div>
+                </div>
+            </div>
+            
+            <div style="font-family: monospace; line-height: 2.4; color: #aaa;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                    <span>ALTITUDE</span>
+                    <span id="alt" style="color: var(--cyan);">FL310 • 31240 ft</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                    <span>AIRSPEED</span>
+                    <span id="speed" style="color: var(--cyan);">482 KTS</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>READINESS</span>
+                    <span id="readiness" style="color: #0f0;">98.7%</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TEAM -->
+    <section id="team" class="section">
+        <h2 class="section-header">ENGINEERING CREW</h2>
+        <div class="team-grid">
+            <div class="crew">
+                <img src="https://picsum.photos/id/201/600/420" alt="Engineer">
+                <p style="margin-top: 18px; font-weight: 500;">CAPT. SOFIA RAMIREZ<br><span style="color:#666;font-size:13px;">Lead Avionics</span></p>
+            </div>
+            <div class="crew">
+                <img src="https://picsum.photos/id/64/600/420" alt="Engineer">
+                <p style="margin-top: 18px; font-weight: 500;">DR. VIKRAM RAO<br><span style="color:#666;font-size:13px;">Structural Lead</span></p>
+            </div>
+            <div class="crew">
+                <img src="https://picsum.photos/id/251/600/420" alt="Engineer">
+                <p style="margin-top: 18px; font-weight: 500;">LT. MARCUS KLEIN<br><span style="color:#666;font-size:13px;">Powerplant</span></p>
+            </div>
+            <div class="crew">
+                <img src="https://picsum.photos/id/312/600/420" alt="Engineer">
+                <p style="margin-top: 18px; font-weight: 500;">ANNA PETROVA<br><span style="color:#666;font-size:13px;">Systems Integration</span></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- TERMINAL -->
+    <section id="terminal" class="section">
+        <h2 class="section-header">COMMAND TERMINAL</h2>
+        <div class="terminal">
+            <input type="text" placeholder="PILOT / CALLSIGN" id="pilot">
+            <input type="text" placeholder="AIRCRAFT REGISTRATION (e.g. VT-FAL)" id="aircraft">
+            <textarea rows="5" placeholder="MAINTENANCE REQUEST OR MISSION BRIEF..."></textarea>
+            <button onclick="initiateService()" class="init-btn">INITIATE SERVICE SEQUENCE</button>
+        </div>
+    </section>
+
+    <div class="scanline"></div>
+
+    <script>
+        let scene, camera, renderer;
+        let aircraft;
+        let particles = [];
+        let lights = [];
+        let mouseX = 0, mouseY = 0;
+        let targetX = 0, targetY = 0;
+
+        function init3D() {
+            const canvas = document.getElementById('bg');
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x050507, 25, 80);
+
+            camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 200);
+            camera.position.set(0, 12, 28);
+
+            // Lighting
+            scene.add(new THREE.AmbientLight(0xaaaaaa, 0.4));
+            
+            const hemi = new THREE.HemisphereLight(0x6688ff, 0x112233, 0.6);
+            scene.add(hemi);
+
+            const spot1 = new THREE.SpotLight(0x00ffff, 3, 100, Math.PI/5, 0.6);
+            spot1.position.set(-25, 35, 15);
+            scene.add(spot1);
+            lights.push(spot1);
+
+            const spot2 = new THREE.SpotLight(0xffffff, 2.5, 100, Math.PI/6, 0.8);
+            spot2.position.set(30, 28, -20);
+            scene.add(spot2);
+            lights.push(spot2);
+
+            // Floor
+            const floorGeo = new THREE.PlaneGeometry(120, 120);
+            const floorMat = new THREE.MeshPhongMaterial({
+                color: 0x1a1a1f,
+                shininess: 40,
+                specular: 0x555555
+            });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = -0.2;
+            scene.add(floor);
+
+            // Create aircraft
+            createAircraft();
+
+            // Particles
+            createHangarParticles();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                targetX = (e.clientX / window.innerWidth) * 2 - 1;
+                targetY = -(e.clientY / window.innerHeight) * 2 + 1;
+            });
+
+            animate();
+        }
+
+        function createAircraft() {
+            aircraft = new THREE.Group();
+            scene.add(aircraft);
+
+            // Fuselage
+            const fuseGeo = new THREE.CylinderGeometry(1.2, 1.8, 22, 32);
+            const mat = new THREE.MeshPhongMaterial({ color: 0x22272f, shininess: 60 });
+            const fuselage = new THREE.Mesh(fuseGeo, mat);
+            fuselage.rotation.z = Math.PI / 2;
+            aircraft.add(fuselage);
+
+            // Wings
+            const wingGeo = new THREE.BoxGeometry(28, 0.6, 6);
+            const wings = new THREE.Mesh(wingGeo, mat);
+            wings.position.y = 2.5;
+            aircraft.add(wings);
+
+            // Tail
+            const tailGeo = new THREE.BoxGeometry(8, 4, 0.6);
+            const tail = new THREE.Mesh(tailGeo, mat);
+            tail.position.set(-10, 5, 0);
+            tail.rotation.z = 0.3;
+            aircraft.add(tail);
+
+            // Engines
+            const engineMat = new THREE.MeshPhongMaterial({ color: 0x111111 });
+            for (let i = -1; i <= 1; i += 2) {
+                const eng = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 5, 24), engineMat);
+                eng.rotation.z = Math.PI / 2;
+                eng.position.set(4, 2.5, i * 4);
+                aircraft.add(eng);
+            }
+
+            aircraft.position.y = 4;
+        }
+
+        function createHangarParticles() {
+            const count = 220;
+            const geo = new THREE.BufferGeometry();
+            const pos = new Float32Array(count * 3);
+            const col = new Float32Array(count * 3);
+
+            for (let i = 0; i < count * 3; i += 3) {
+                pos[i] = (Math.random() - 0.5) * 70;
+                pos[i+1] = Math.random() * 40;
+                pos[i+2] = (Math.random() - 0.5) * 70;
+
+                const intensity = Math.random();
+                col[i] = 0.6 + intensity * 0.4;
+                col[i+1] = 0.9;
+                col[i+2] = 1;
+            }
+
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+
+            const mat = new THREE.PointsMaterial({
+                size: 0.22,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.65,
+                blending: THREE.AdditiveBlending
+            });
+
+            const pointCloud = new THREE.Points(geo, mat);
+            scene.add(pointCloud);
+            particles.push(pointCloud);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Mouse follow
+            mouseX = mouseX * 0.9 + targetX * 0.1;
+            mouseY = mouseY * 0.9 + targetY * 0.1;
+
+            if (aircraft) {
+                aircraft.rotation.y = mouseX * 0.18;
+                aircraft.rotation.z = mouseY * 0.12;
+                aircraft.position.x = mouseX * 3;
+            }
+
+            // Gentle bob
+            if (aircraft) aircraft.position.y = 4 + Math.sin(Date.now() * 0.001) * 0.6;
+
+            // Moving lights
+            lights.forEach((l, i) => {
+                l.position.x = Math.sin(Date.now() * 0.0006 + i) * 22;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        // Loading Sequence
+        function runLoading() {
+            const texts = [
+                "AIRCRAFT SYSTEM INITIALIZING",
+                "RUNNING DIAGNOSTICS...",
+                "HYDRAULIC SYSTEM READY",
+                "AVIONICS ONLINE",
+                "HANGAR ACCESS GRANTED"
+            ];
+            let i = 0;
+            const bootEl = document.getElementById('boot-text');
+            const prog = document.getElementById('progress');
+
+            let progress = 0;
+            const int = setInterval(() => {
+                progress += 4 + Math.random() * 9;
+                if (progress > 100) progress = 100;
+                prog.style.width = progress + '%';
+
+                if (progress > 25 && i === 0) { bootEl.textContent = texts[1]; i++; }
+                if (progress > 50 && i === 1) { bootEl.textContent = texts[2]; i++; }
+                if (progress > 70 && i === 2) { bootEl.textContent = texts[3]; i++; }
+                if (progress > 90 && i === 3) { bootEl.textContent = texts[4]; i++; }
+
+                if (progress >= 100) {
+                    clearInterval(int);
+                    setTimeout(() => {
+                        document.getElementById('loader').style.opacity = 0;
+                        setTimeout(() => document.getElementById('loader').style.display = 'none', 1600);
+                    }, 600);
+                }
+            }, 45);
+        }
+
+        function startPitSequence() {
+            const btn = document.querySelector('.btn-primary');
+            btn.style.transform = 'scale(0.92)';
+            setTimeout(() => btn.style.transform = 'scale(1)', 220);
+            
+            if (aircraft) {
+                aircraft.position.z = -8;
+                setTimeout(() => { if(aircraft) aircraft.position.z = 0; }, 900);
+            }
+        }
+
+        function initiateService() {
+            const pilot = document.getElementById('pilot').value || "UNKNOWN";
+            alert(`SERVICE SEQUENCE INITIATED\nPilot: ${pilot}\n\nGround crew dispatched. ETA: 4 minutes.`);
+        }
+
+        // Live telemetry
+        function simulateTelemetry() {
+            setInterval(() => {
+                const egt = 480 + Math.random() * 280;
+                document.getElementById('egt-val').textContent = Math.floor(egt);
+                
+                const fuel = 82 + Math.random() * 16;
+                document.getElementById('fuel-val').textContent = Math.floor(fuel);
+                
+                document.getElementById('speed').textContent = Math.floor(410 + Math.random() * 120) + " KTS";
+                document.getElementById('readiness').textContent = (96 + Math.random() * 3.8).toFixed(1) + "%";
+            }, 1350);
+        }
+
+        window.onload = () => {
+            init3D();
+            runLoading();
+            simulateTelemetry();
+        };
+    </script>
+</body>
+</html>
